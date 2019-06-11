@@ -3,7 +3,8 @@ import requests
 
 
 def get_times(html_soup):
-    times = html_soup.find_all('tbody', class_='spreadsheet')
+    body = html_soup.find_all("div", class_="in scrollable shadow_box back_primary")
+    times = body[0].find_all('tbody', class_='spreadsheet')
     heads = ["Main Story", "Main + Extras", "Completionist"]
     out = {}
 
@@ -42,7 +43,19 @@ def data_extractor(url):
     except:
         genres = 'N/A'
 
+    try:
+        year = html_soup.find_all('strong', string='JP:')[0].next_sibling
+        year = year.strip()[-4:]
+    except:
+        try:
+            year = html_soup.find_all('strong', string='NA:')[0].next_sibling
+            year = year.strip()[-4:]
+        except:
+            year = 'N/A'
+
+
     out = {'Title': title.strip(),
+           'Year': year,
            'Times': times,
            'Developer': developer.strip(),
            'Publisher': publisher.strip(),
@@ -56,6 +69,7 @@ def add_to_csv(filename, d):
     with open(filename, 'a') as f:
         out = []
         out.append(d['Title'])
+        out.append(d['Year'])
         for k, v in d['Times'].items():
             out.append(v)
 
@@ -77,7 +91,8 @@ def add_to_csv(filename, d):
 
 def print_game(d):
     print("")
-    print(d['Title'])
+    print(d['Title'], end=", ")
+    print(d['Year'])
     for k,v in d['Times'].items():
         print(f"{k}: {v}")
     print("")
